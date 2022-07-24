@@ -1,0 +1,47 @@
+﻿<ResourceDictionary 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:NINA.Joko.Plugin.MechFlat"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ninactrl="clr-namespace:NINACustomControlLibrary;assembly=NINACustomControlLibrary"
+    xmlns:rules="clr-namespace:NINA.Core.Utility.ValidationRules;assembly=NINA.Core"
+    mc:Ignorable="d">
+
+    <DataTemplate x:Key="MechFlat_Options_Content">
+        <Grid d:DataContext="{d:DesignInstance local:MechFlatOptions, IsDesignTimeCreatable=False}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.Resources>
+                <TextBlock x:Key="DefaultMechanicalShutterDelay_Tooltip" Text="Default mechanical shutter delay used in Trained Mechanical Flat Exposure sequence items when they are created" />
+            </Grid.Resources>
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                Margin="5,5,0,0"
+                VerticalAlignment="Center"
+                Text="Default Shutter Delay"
+                ToolTip="{StaticResource DefaultMechanicalShutterDelay_Tooltip}" />
+            <ninactrl:UnitTextBox
+                Grid.Row="0"
+                Grid.Column="1"
+                MinWidth="80"
+                Margin="5,5,0,0"
+                HorizontalAlignment="Left"
+                ToolTip="{StaticResource DefaultMechanicalShutterDelay_Tooltip}"
+                Unit="secs">
+                <Binding Path="ShutterTime_sec" UpdateSourceTrigger="LostFocus">
+                    <Binding.ValidationRules>
+                        <rules:GreaterThanZeroRule />
+                    </Binding.ValidationRules>
+                </Binding>
+            </ninactrl:UnitTextBox>
+        </Grid>
+    </DataTemplate>
+
+</ResourceDictionary>

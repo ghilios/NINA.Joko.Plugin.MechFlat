@@ -267,14 +267,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MechanicalShutterFlats.cs" />
-    <Compile Include="SequenceItems\MechanicalShutterFlatsCondition.cs" />
-    <Compile Include="SequenceItems\MechanicalShutterFlatsTrigger.cs" />
+    <Compile Include="Interfaces\IMechFlatOptions.cs" />
+    <Compile Include="MechFlatOptions.cs" />
+    <Compile Include="MechFlatPlugin.cs" />
     <Compile Include="Options.xaml.cs">
       <DependentUpon>Options.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SequenceItems\MechanicalShutterFlatsInstruction.cs" />
     <Compile Include="SequenceItems\MechanicalShutterFlatsTemplates.xaml.cs">
       <DependentUpon>MechanicalShutterFlatsTemplates.xaml</DependentUpon>
     </Compile>
@@ -283,6 +282,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="SequenceItems\TrainedMechFlatExposureInstruction.cs" />
+    <Compile Include="SequenceItems\WaitForPreciseTimeSpan.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -296,6 +297,10 @@
     <Page Include="Options.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\OptionsDataTemplates.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="SequenceItems\MechanicalShutterFlatsTemplates.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -321,18 +326,18 @@
   <Import Project="..\packages\VVVV.FreeImage.3.15.1.1\build\net40\VVVV.FreeImage.targets" Condition="Exists('..\packages\VVVV.FreeImage.3.15.1.1\build\net40\VVVV.FreeImage.targets')" />
   <PropertyGroup>
     <PostBuildEvent>
-if not exist "%25localappdata%25\NINA\Plugins" (
-  echo "Creating $(PlatformName) Plugins folder"
-  mkdir "%25localappdata%25\NINA\Plugins"
-)
-if not exist "%25localappdata%25\NINA\Plugin\$(TargetName)" (
-  echo "Creating $(PlatformName) Plugins $(TargetName) folder"
-  mkdir "%25localappdata%25\NINA\Plugins\$(TargetName)"
-)
+      if not exist "%25localappdata%25\NINA\Plugins" (
+      echo "Creating $(PlatformName) Plugins folder"
+      mkdir  "%25localappdata%25\NINA\Plugins"
+      )
+      if not exist "%25localappdata%25\NINA\Plugin\Mech Flat" (
+      echo "Creating $(PlatformName) Plugins Mech Flat folder"
+      mkdir  "%25localappdata%25\NINA\Plugins\Mech Flat"
+      )
 
-echo "Copying $(PlatformName) $(TargetFileName)"
-xcopy "$(TargetPath)" "%25localappdata%25\NINA\Plugins\$(TargetName)" /h/i/c/k/e/r/y
-		</PostBuildEvent>
+      echo "Copying $(PlatformName) $(TargetFileName)"
+      xcopy "$(TargetPath)" "%25localappdata%25\NINA\Plugins\Mech Flat\" /h/k/r/y
+      xcopy "$(TargetDir)$(TargetName).pdb" "%25localappdata%25\NINA\Plugins\Mech Flat\" /h/k/r/y</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Google.Protobuf.Tools.3.18.1\build\Google.Protobuf.Tools.targets" Condition="Exists('..\packages\Google.Protobuf.Tools.3.18.1\build\Google.Protobuf.Tools.targets')" />
   <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.5\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.5\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
