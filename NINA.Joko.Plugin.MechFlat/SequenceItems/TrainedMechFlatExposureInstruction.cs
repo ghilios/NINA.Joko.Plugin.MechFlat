@@ -54,13 +54,11 @@ namespace NINA.Joko.Plugin.MechFlat.SequenceItems {
                 MechFlatPlugin.MechFlatOptions,
                 new WaitForPreciseTimeSpan(),
                 new CloseCover(flatDeviceMediator),
-                new ToggleLight(flatDeviceMediator) { OnOff = true },
-                new SwitchFilter(profileService, filterWheelMediator),
-                new SetBrightness(flatDeviceMediator),
-                new TakeExposure(profileService, cameraMediator, imagingMediator, imageSaveMediator, imageHistoryVM) { ImageType = CaptureSequence.ImageTypes.FLAT },
-                new WaitForPreciseTimeSpan(),
-                new LoopCondition() { Iterations = 1 },
                 new ToggleLight(flatDeviceMediator) { OnOff = false },
+                new FlashFlatPanel(flatDeviceMediator),
+                new SwitchFilter(profileService, filterWheelMediator),
+                new TakeExposure(profileService, cameraMediator, imagingMediator, imageSaveMediator, imageHistoryVM) { ImageType = CaptureSequence.ImageTypes.FLAT },
+                new LoopCondition() { Iterations = 1 },
                 new OpenCover(flatDeviceMediator),
                 new WaitForPreciseTimeSpan()
             ) {
@@ -72,13 +70,11 @@ namespace NINA.Joko.Plugin.MechFlat.SequenceItems {
             IMechFlatOptions options,
             WaitForPreciseTimeSpan beforeWait,
             CloseCover closeCover,
-            ToggleLight toggleLightOn,
-            SwitchFilter switchFilter,
-            SetBrightness setBrightness,
-            TakeExposure takeExposure,
-            WaitForPreciseTimeSpan exposureWait,
-            LoopCondition loopCondition,
             ToggleLight toggleLightOff,
+            FlashFlatPanel flashFlatPanel,
+            SwitchFilter switchFilter,
+            TakeExposure takeExposure,
+            LoopCondition loopCondition,
             OpenCover openCover,
             WaitForPreciseTimeSpan afterWait
             ) {
@@ -87,7 +83,7 @@ namespace NINA.Joko.Plugin.MechFlat.SequenceItems {
 
             this.Add(closeCover);
             this.Add(switchFilter);
-            this.Add(setBrightness);
+            this.Add(toggleLightOff);
 
             var container = new SequentialContainer();
             if (loopCondition.Iterations <= 0) {
@@ -102,9 +98,7 @@ namespace NINA.Joko.Plugin.MechFlat.SequenceItems {
 
             var flatPanelContainer = new SequentialContainer();
             flatPanelContainer.Add(beforeWait);
-            flatPanelContainer.Add(toggleLightOn);
-            flatPanelContainer.Add(exposureWait);
-            flatPanelContainer.Add(toggleLightOff);
+            flatPanelContainer.Add(flashFlatPanel);
             flatPanelContainer.Add(afterWait);
 
             exposureContainer.Add(flatPanelContainer);
@@ -180,8 +174,8 @@ namespace NINA.Joko.Plugin.MechFlat.SequenceItems {
             return (Items[1] as SwitchFilter);
         }
 
-        public SetBrightness GetSetBrightnessItem() {
-            return (Items[2] as SetBrightness);
+        public ToggleLight GetToggleLightOff() {
+            return (Items[2] as ToggleLight);
         }
 
         public SequentialContainer GetImagingContainer() {
@@ -208,20 +202,12 @@ namespace NINA.Joko.Plugin.MechFlat.SequenceItems {
             return GetFlatControlContainer().Items[0] as WaitForPreciseTimeSpan;
         }
 
-        public ToggleLight GetToggleLightOnItem() {
-            return GetFlatControlContainer().Items[1] as ToggleLight;
-        }
-
-        public WaitForPreciseTimeSpan GetExposureWaitItem() {
-            return GetFlatControlContainer().Items[2] as WaitForPreciseTimeSpan;
-        }
-
-        public ToggleLight GetToggleLightOffItem() {
-            return GetFlatControlContainer().Items[3] as ToggleLight;
+        public FlashFlatPanel GetFlashFlatPanelItem() {
+            return GetFlatControlContainer().Items[1] as FlashFlatPanel;
         }
 
         public WaitForPreciseTimeSpan GetAfterWaitItem() {
-            return GetFlatControlContainer().Items[4] as WaitForPreciseTimeSpan;
+            return GetFlatControlContainer().Items[2] as WaitForPreciseTimeSpan;
         }
 
         public OpenCover GetOpenCoverItem() {
@@ -235,13 +221,11 @@ namespace NINA.Joko.Plugin.MechFlat.SequenceItems {
                 this.options,
                 (WaitForPreciseTimeSpan)GetBeforeWaitItem().Clone(),
                 (CloseCover)this.GetCloseCoverItem().Clone(),
-                (ToggleLight)this.GetToggleLightOnItem().Clone(),
+                (ToggleLight)this.GetToggleLightOff().Clone(),
+                (FlashFlatPanel)this.GetFlashFlatPanelItem().Clone(),
                 (SwitchFilter)this.GetSwitchFilterItem().Clone(),
-                (SetBrightness)this.GetSetBrightnessItem().Clone(),
                 (TakeExposure)this.GetExposureItem().Clone(),
-                (WaitForPreciseTimeSpan)GetExposureWaitItem().Clone(),
                 (LoopCondition)this.GetIterations().Clone(),
-                (ToggleLight)this.GetToggleLightOffItem().Clone(),
                 (OpenCover)this.GetOpenCoverItem().Clone(),
                 (WaitForPreciseTimeSpan)GetAfterWaitItem().Clone()
             ) {
@@ -261,15 +245,15 @@ namespace NINA.Joko.Plugin.MechFlat.SequenceItems {
             var filter = GetSwitchFilterItem()?.Filter;
             var beforeWait = GetBeforeWaitItem();
             var afterWait = GetAfterWaitItem();
-            var exposureWait = GetExposureWaitItem();
+            var flashFlat = GetFlashFlatPanelItem();
             var takeExposure = GetExposureItem();
             var binning = takeExposure.Binning;
             var gain = takeExposure.Gain == -1 ? profileService.ActiveProfile.CameraSettings.Gain ?? -1 : takeExposure.Gain;
             var info = profileService.ActiveProfile.FlatDeviceSettings.GetBrightnessInfo(new FlatDeviceFilterSettingsKey(filter?.Position, binning, gain));
 
-            GetSetBrightnessItem().Brightness = info.AbsoluteBrightness;
+            flashFlat.Brightness = info.AbsoluteBrightness;
+            flashFlat.Time = info.Time;
             takeExposure.ExposureTime = info.Time + 2.0d * ShutterTime_sec;
-            exposureWait.Time = info.Time;
             beforeWait.Time = ShutterTime_sec;
             afterWait.Time = ShutterTime_sec;
             Logger.Info($"Taking Mechanical Shutter Flat Exposure. Mechanical Shutter wait {ShutterTime_sec} secs, Exposure time {info.Time} secs");
@@ -290,25 +274,15 @@ namespace NINA.Joko.Plugin.MechFlat.SequenceItems {
                 openItem.Skip();
             }
 
-            var toggleLight = GetToggleLightOnItem();
-            if (!toggleLight.Validate()) {
-                toggleLight.Skip();
-                GetSetBrightnessItem().Skip();
-            }
-            var toggleLightOff = GetToggleLightOffItem();
-            if (!toggleLightOff.Validate()) {
-                toggleLightOff.Skip();
-            }
-
             return base.Execute(progress, token);
         }
 
         public override bool Validate() {
             var switchFilter = GetSwitchFilterItem();
             var takeExposure = GetExposureItem();
-            var setBrightness = GetSetBrightnessItem();
+            var flashFlat = GetFlashFlatPanelItem();
 
-            var valid = takeExposure.Validate() && switchFilter.Validate() && setBrightness.Validate();
+            var valid = takeExposure.Validate() && switchFilter.Validate() && flashFlat.Validate();
 
             var issues = new List<string>();
 
@@ -322,7 +296,7 @@ namespace NINA.Joko.Plugin.MechFlat.SequenceItems {
                 }
             }
 
-            Issues = issues.Concat(takeExposure.Issues).Concat(switchFilter.Issues).Concat(setBrightness.Issues).Distinct().ToList();
+            Issues = issues.Concat(takeExposure.Issues).Concat(switchFilter.Issues).Concat(flashFlat.Issues).Distinct().ToList();
             RaisePropertyChanged(nameof(Issues));
 
             return valid;

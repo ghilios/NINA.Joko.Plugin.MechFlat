@@ -11,7 +11,7 @@
     xmlns:rules="clr-namespace:NINA.Core.Utility.ValidationRules;assembly=NINA.Core"
     xmlns:ninactrl="clr-namespace:NINACustomControlLibrary;assembly=NINACustomControlLibrary">
 
-    <DataTemplate x:Key="NINA.Joko.Plugin.SequenceItems.WaitForPreciseTimeSpan_Mini">
+    <DataTemplate x:Key="NINA.Joko.Plugin.MechFlat.SequenceItems.WaitForPreciseTimeSpan_Mini">
         <mini:MiniSequenceItem>
             <mini:MiniSequenceItem.SequenceItemContent>
                 <StackPanel Orientation="Horizontal">
@@ -43,6 +43,58 @@
                         </ninactrl:UnitTextBox.Text>
                     </ninactrl:UnitTextBox>
                 </StackPanel>
+            </view:SequenceBlockView.SequenceItemContent>
+        </view:SequenceBlockView>
+    </DataTemplate>
+
+    <DataTemplate x:Key="NINA.Joko.Plugin.MechFlat.SequenceItems.FlashFlatPanel_Mini">
+        <mini:MiniSequenceItem>
+            <mini:MiniSequenceItem.SequenceItemContent>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Text="{Binding Time}" />
+                    <TextBlock VerticalAlignment="Center" Text="s, @" />
+                    <TextBlock VerticalAlignment="Center" Text="{Binding Brightness}" />
+                </StackPanel>
+            </mini:MiniSequenceItem.SequenceItemContent>
+        </mini:MiniSequenceItem>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type local:FlashFlatPanel}">
+        <view:SequenceBlockView>
+            <view:SequenceBlockView.SequenceItemContent>
+                <WrapPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center" Text="{ns:Loc LblDelay}" />
+                        <ninactrl:UnitTextBox
+                        MinWidth="40"
+                        Margin="5,0,0,0"
+                        VerticalAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        TextAlignment="Right"
+                        Unit="s">
+                            <ninactrl:UnitTextBox.Text>
+                                <Binding Mode="TwoWay" Path="Time">
+                                    <Binding.ValidationRules>
+                                        <rules:GreaterThanZeroRule />
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </ninactrl:UnitTextBox.Text>
+                        </ninactrl:UnitTextBox>
+                    </StackPanel>
+                    <TextBlock
+                        Margin="7.5,0,7.5,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="|" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center" Text="{ns:Loc LblFlatDeviceBrightness}" />
+                        <ninactrl:StepperControl
+                            Margin="5,0,0,0"
+                            MinValue="0"
+                            StepSize="1"
+                            Value="{Binding Brightness, Mode=TwoWay}" />
+                    </StackPanel>
+                </WrapPanel>
             </view:SequenceBlockView.SequenceItemContent>
         </view:SequenceBlockView>
     </DataTemplate>
@@ -120,7 +172,7 @@
                                             Path="Data.Gains"
                                             Source="{StaticResource CameraInfo}" />
                                         <Binding
-                                            Converter="{StaticResource BooleanToVisibilityCollapsedConverter}"
+                                            Converter="{StaticResource InverseBooleanToVisibilityCollapsedConverter}"
                                             Path="Data.Connected"
                                             Source="{StaticResource CameraInfo}" />
                                     </PriorityBinding>
